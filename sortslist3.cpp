@@ -1,91 +1,79 @@
-//gcc sortslist3.cpp -g -O2 -o sortslist3 -lstdc++ && ./sortslist3
-
+//gcc sortslist3.cpp -g -O2 -o sortslist3 -lstdc++ -std=c++11 && ./sortslist3
 #include <stdio.h>
 #include <utility>
+#include <memory>
 
-// merge sort of sinlgly-linked list
+using namespace std;
 
-/**
-* Definition for singly-linked list.
-*/
+// bottom up merge sort of sinlgly-linked list
 struct ListNode {
   int val;
   ListNode *next;
-  ListNode(int x) : val(x), next(NULL) {}
-  ListNode() : val(0), next(NULL) {}
 };
-/**/
 
-static int STACKDEPTH = 0;
-static int MAXSD = 0;
+//merge h2 into h1, h2 becomes empty
+void merge(ListNode*& h1, ListNode*& h2){
+  if (h1 == NULL){
+    swap(h1, h2);
+    return;
+  }
+  if (h2 == NULL) return;
+  if (h1->val > h2->val){
+    swap(h1, h2);
+  }
+  ListNode* hsmall = h1;
+  ListNode* hbig = h2;
+  ListNode* tmp;
+  while (true){
+    tmp = hsmall;
+    hsmall = hsmall->next;
+    if (hsmall == NULL){
+      tmp->next = hbig;
+      break;
+    }
+    if (hsmall->val > hbig->val){
+      tmp->next = hbig;
+      swap(hsmall, hbig);
+    }
+  }
+  h2 = NULL;
+}
 
-class Solution {
-public:
-  //merge h2 into h1, h2 becomes empty
-  void merge(ListNode*& h1, ListNode*& h2){
-    if (h1 == NULL){
-      std::swap(h1, h2);
-      return;
+ListNode *sortList(ListNode *head) {
+  if (head == NULL) return NULL;
+  ListNode* pc = NULL;
+  ListNode* bucket[64] = {};
+  int fill = 0;
+
+  while (head){
+    pc = head;
+    head = head->next;
+    pc->next = NULL;
+
+    int i = 0;
+    while (i < fill && bucket[i]) {
+      merge(bucket[i], pc);///
+      swap(pc, bucket[i++]);
     }
-    if (h2 == NULL) return;
-    if (h1->val > h2->val){
-      std::swap(h1, h2);
-    }
-    ListNode* hsmall = h1;
-    ListNode* hbig = h2;
-    ListNode* tmp;
-    while (true){
-      tmp = hsmall;
-      hsmall = hsmall->next;
-      if (hsmall == NULL){
-        tmp->next = hbig;
-        break;
-      }
-      if (hsmall->val > hbig->val){
-        tmp->next = hbig;
-        std::swap(hsmall, hbig);
-      }
-    }
-    h2 = NULL;
+    swap(pc, bucket[i]);
+
+    if (i == fill) ++fill;
   }
 
-  ListNode *sortList(ListNode *head) {
-    if (head == NULL) return NULL;
-    ListNode* pc = NULL;
-    ListNode* bucket[64] = {};
-    int fill = 0;
-
-    while (head){
-      pc = head;
-      head = head->next;
-      pc->next = NULL;
-
-      int i = 0;
-      while (i < fill && bucket[i]) {
-        merge(bucket[i], pc);///
-        std::swap(pc, bucket[i++]);
-      }
-      std::swap(pc, bucket[i]);
-
-      if (i == fill) ++fill;
-    }
-
-    for (int i = 1; i < fill; ++i){
-      merge(bucket[i], bucket[i - 1]);
-    }
-    std::swap(head, bucket[fill - 1]);
-    return head;
+  for (int i = 1; i < fill; ++i){
+    merge(bucket[i], bucket[i - 1]);
   }
+  swap(head, bucket[fill - 1]);
+  return head;
+}
 
-  void print(ListNode *h){
-    while (h){
-      printf("%d ", h->val);
-      h = h->next;
-    }
-    printf("\n");
+void print(ListNode *h){
+  while (h){
+    printf("%d ", h->val);
+    h = h->next;
   }
-
-};
+  printf("\n");
+}
 
 #define _countof(a) (sizeof(a)/sizeof(a[0]))
 
@@ -97,17 +85,17 @@ int main(int argc, char* argv[]){
   int a[] = { 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
   int sz = _countof(a);
   printf("total number of elements:%d\n", sz);
-  ListNode *p = new ListNode[sz];
+
+  unique_ptr<ListNode[]> p(new ListNode[sz]);
   for (int i = sz - 1; i >= 0; --i){
     p[i].val = a[i];
     if (i + 1 < sz){
       p[i].next = &p[i + 1];
     }
   }
-  ListNode* head = p;
-  Solution s;
-  head=s.sortList(head);
-  s.print(head);
-  printf("stack depth = %d\n", MAXSD);
+
+  ListNode* head = &p[0];
+  head=sortList(head);
+  print(head);
   return 0;
 }
