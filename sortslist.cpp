@@ -76,7 +76,7 @@ class Solution {
         if(head->val > tail->val){std::swap(head->val,tail->val);}
         return;
       }*/
-#if 0
+#if 1
       while((head!=NULL) && (head!=tail)){
         ListNode *p = partition(head,tail);
         ++STACKDEPTH;
