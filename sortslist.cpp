@@ -1,4 +1,4 @@
-//gcc sortslist.cpp -g -O0 -o sortslist -lstdc++ && ./sortslist
+//gcc sortslist.cpp -g -O2 -o sortslist -lstdc++ && ./sortslist
 
 #include <stdio.h>
 #include <utility>
